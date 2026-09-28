@@ -106,10 +106,25 @@ class HindsightMemoryClient:
                 tags_match="any",
             )
 
-            results_text = getattr(response, "results", "") or ""
+            # arecall returns RecallResponse where .results is a list of
+            # RecallResult objects each having a .text attribute (plain string).
+            # We join them all into one block of text for the LLM.
+            raw_results = getattr(response, "results", None)
+            if isinstance(raw_results, list):
+                # Each item is a RecallResult with a .text field
+                results_text = "\n\n".join(
+                    getattr(r, "text", str(r)) for r in raw_results if getattr(r, "text", None)
+                )
+            elif isinstance(raw_results, str):
+                results_text = raw_results
+            elif hasattr(response, "to_prompt_string"):
+                results_text = response.to_prompt_string() or ""
+            else:
+                results_text = ""
+
             logger.info(
-                f"Recalled memories: query='{query[:80]}…', "
-                f"results_len={len(results_text)}"
+                f"Recalled memories: results_count={len(raw_results) if isinstance(raw_results, list) else 'n/a'}, "
+                f"text_len={len(results_text)}"
             )
 
             return {
