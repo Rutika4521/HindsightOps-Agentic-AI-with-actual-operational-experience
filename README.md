@@ -230,7 +230,7 @@ LLM_MODEL=llama-3.3-70b-versatile
 ```bash
 # 1. Clone
 git clone <repo>
-cd incident-memory-commander
+cd <Your_Folder_Name>
 
 # 2. Install Python dependencies
 pip install -r requirements.txt
